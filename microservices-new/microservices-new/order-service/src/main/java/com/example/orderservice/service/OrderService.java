@@ -22,7 +22,7 @@ import java.util.UUID;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final WebClient webClient;
+    private final WebClient.Builder webClientBuilder;
 
     public void placeOrder(OrderRequestDtoIn orderRequestDtoIn) {
         Order order = new Order();
@@ -38,8 +38,8 @@ public class OrderService {
         List<String> skuCodes = order.getOrderLineItemsList().stream().map(OrderLineItem::getSkuCode).toList();
         //Call Inventory stock and place an order if product is in stock
         //synchronous request - defined by block()
-        InventoryResponseDtoOut[] inventoryResponseDtoOutArray = webClient.get()
-                .uri("http://localhost:8082/api/inventory",
+        InventoryResponseDtoOut[] inventoryResponseDtoOutArray = webClientBuilder.build().get()
+                .uri("http://inventory-service/api/inventory",
                         uriBuilder -> uriBuilder.queryParam("skuCode", skuCodes).build())
                 .retrieve()
                 .bodyToMono(InventoryResponseDtoOut[].class)//Boolean is the type of the response we are looking for

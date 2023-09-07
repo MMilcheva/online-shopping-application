@@ -2,7 +2,7 @@ package com.example.orderservice.service;
 
 import com.example.orderservice.dto.InventoryResponseDtoOut;
 import com.example.orderservice.dto.OrderLineItemDtoIn;
-import com.example.orderservice.dto.OrderRequestDtoIn;
+import com.example.orderservice.dto.OrderRequest;
 import com.example.orderservice.model.Order;
 import com.example.orderservice.model.OrderLineItem;
 import com.example.orderservice.repository.OrderRepository;
@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -24,11 +23,11 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final WebClient.Builder webClientBuilder;
 
-    public void placeOrder(OrderRequestDtoIn orderRequestDtoIn) {
+    public String placeOrder(OrderRequest orderRequest) {
         Order order = new Order();
         order.setOrderNumber(UUID.randomUUID().toString());
 
-        List<OrderLineItem> orderLineItemList = orderRequestDtoIn.getOrderLineItemDtoInList()
+        List<OrderLineItem> orderLineItemList = orderRequest.getOrderLineItemDtoInList()
                 .stream()
                 .map(this::mapToDto)
                 .toList();
@@ -48,6 +47,7 @@ public class OrderService {
         boolean allProductsInStock = Arrays.stream(inventoryResponseDtoOutArray).allMatch(InventoryResponseDtoOut::isInStock);
         if (allProductsInStock) {
             orderRepository.save(order);
+            return "Order placed successfully!";
         } else {
             throw new IllegalArgumentException("Product is not in stock, please try again later");
         }
